@@ -25,7 +25,96 @@ string imgFolderLink = "/Users/leo/Documents/학교 문서/ᄋ
 
 int main()
 {
-    ex07();
+    ex09();
+}
+
+int stretch(int x, int r1, int s1, int r2, int s2)
+{
+    float result;
+    if (0 <= x && x <= r1)
+    {
+        result = s1 / r1 * x;
+    }
+    else if (r1 < x && x <= r2)
+    {
+        result = ((s2 - s1) / (r2 - r1)) * (x - r1) + s1;
+    }
+    else if (r2 < x && x <= 255)
+    {
+        result = ((255 - s2) / (255 - r2)) * (x - r2) + s2;
+    }
+    return (int)result;
+}
+int ex09()
+{
+    int r1, s1, r2, s2;
+    cout << "r1를 입력하시오: " ;
+    cin >> r1;
+    cout << "r2를 입력하시오: ";
+    cin >> r2;
+    cout << "s1를 입력하시오: " ;
+    cin >> s1;
+    cout << "s2를 입력하시오: " ;
+    cin >> s2;
+
+    Mat image = imread(imgFolderLink + "card.jpg",IMREAD_GRAYSCALE);
+    Mat image2 = image.clone();
+
+    for (int y = 0; y < image.rows; ++y)
+    {
+        for (int x = 0; x < image.cols; ++x)
+        {
+            int output = stretch(image.at<uchar>(y,x),r1,s1,r2,s2);
+            image2.at<uchar>(y,x) = saturate_cast<uchar>(output);
+        }
+    }
+    imshow("1",image);
+    imshow("2",image2);
+    waitKey(0);
+    return 0;
+}
+
+void drawHist(int histogram[])
+{
+    int hist_w = 512; // 히스토그램 영상의 폭
+    int hist_h=400; //히스토그램영상의높이
+    int bin_w = cvRound((double) hist_w / 256); // 빈의 폭
+    // 히스토그램이 그려지는 영상(컬러로 정의)
+    Mat histImage(hist_h, hist_w, CV_8UC3, Scalar(0, 0, 0));
+    // 히스토그램에서 최대값을 찾는다.
+    int max = histogram[0];
+    for (int i = 1; i < 256; i++)
+    {
+        if (max < histogram[i])
+        {
+            max = histogram[i];
+        }
+    }
+    for (int i = 0; i < 255; i++)
+    {
+        histogram[i] = floor(((double)histogram[i] / max)*histImage.rows);
+    }
+    for (int i = 0; i < 255; i++)
+    {
+        line(histImage, Point(bin_w*(i), hist_h), Point(bin_w*(i), hist_h - histogram[i]), Scalar(0, 0, 255));
+    }
+    imshow("Histogram", histImage);
+}
+
+int ex08()
+{
+    Mat image = imread(imgFolderLink + "card.jpg",IMREAD_GRAYSCALE);
+    int histogram[256] = {0};
+    for (int y = 0; y < image.rows; ++y)
+    {
+        for (int x = 0; x < image.cols; ++x)
+        {
+            histogram[(int)image.at<uchar>(y,x)]++;
+        }
+    }
+    drawHist(histogram);
+    waitKey(0);
+    return 0;
 }
 
 int ex07()
